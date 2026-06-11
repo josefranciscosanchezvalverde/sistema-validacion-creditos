@@ -1,0 +1,178 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Gestión de Administradores</title>
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+
+    <nav class="navbar-green">
+        <div class="nav-left" style="display: flex; align-items: center; gap: 15px;">
+            <div class="user-info">
+                <h2>Panel de Administración</h2>
+                <p>Teschi - Gestión de Créditos</p>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="btn-logout-design" onclick="window.location.href='{% url 'salir' %}'">
+                <span>➔</span> Cerrar Sesión
+            </button>
+        </div>
+    </nav>
+
+    <div class="tabs-full-width">
+        <div class="tabs-container">
+            <a href="{% url 'panel_admin' %}" class="tab-item">
+                📄 Gestión de Créditos
+            </a>
+            <a href="{% url 'gestion_administradores' %}" class="tab-item active">
+                🛡️ Gestión de Administradores
+            </a>
+        </div>
+    </div>
+
+    <main class="container">
+        
+        {% if messages %}
+            <div style="margin-bottom: 20px;">
+                {% for message in messages %}
+                    <div style="padding: 12px; border-radius: 6px; margin-bottom: 10px; font-size: 0.95rem; {% if message.tags == 'error' %} background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; {% else %} background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; {% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="admin-main-card" style="margin-bottom: 30px;">
+            <h3 class="section-title" style="margin-top: 0; margin-bottom: 25px;">Crear Nuevo Administrador</h3>
+            
+            <form method="POST" action="{% url 'gestion_administradores' %}">
+                {% csrf_token %}
+                <div class="admin-form-row">
+                    <div class="admin-form-group">
+                        <label>Usuario / Matrícula</label>
+                        <input type="text" name="usuario" class="admin-form-control" placeholder="Ej. admin2 o 2026..." required>
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" name="nombre" class="admin-form-control" placeholder="Nombre del administrador" required>
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" name="correo" class="admin-form-control" placeholder="admin@teschi.edu.mx" required>
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label>Contraseña</label>
+                        <input type="password" name="password" class="admin-form-control" placeholder="Contraseña" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-submit-admin">
+                    👤+ Crear Administrador
+                </button>
+            </form>
+        </div>
+
+        <div class="admin-main-card">
+            <h3 class="section-title" style="margin-top: 0; margin-bottom: 25px;">Administradores Registrados</h3>
+            
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Usuario (Matrícula)</th>
+                            <th>Nombre</th>
+                            <th>Correo Electrónico</th>
+                            <th>Contraseña</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for admin in administradores %}
+                        <tr>
+                            <td><strong>{{ admin.username }}</strong></td>
+                            <td style="display: flex; align-items: center; gap: 8px;">
+                                <span style="color: #00a650; font-size: 1.1rem;">🛡️</span> 
+                                {{ admin.first_name|default:"Sin nombre" }}
+                            </td>
+                            <td>{{ admin.email }}</td>
+                            <td>
+                                <span class="badge-password" style="color: #00a650; background-color: #e2f9e9; font-weight: bold;">[Encriptada]</span>
+                            </td>
+                            <td>
+                                <button type="button" class="btn-hide-admin" style="color: #ff9800; font-weight: 600;" 
+                                        onclick="abrirModalReset('{{ admin.id }}', '{{ admin.first_name|default:admin.username }}')">
+                                    🔄 Resetear
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" style="padding: 20px; text-align: center; color: #777;">
+                                No hay administradores registrados en el sistema.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="resetModal" class="modal-overlay" onclick="cerrarModalReset()">
+        <div class="modal-container" style="max-width: 400px; height: auto;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div>
+                    <h3 style="margin: 0; color: #00a650;">Nueva Contraseña</h3>
+                    <p id="resetModalTitle" style="margin: 5px 0 0 0; font-size: 0.85em; color: #666;"></p>
+                </div>
+                <span style="cursor: pointer; font-size: 28px; color: #999;" onclick="cerrarModalReset()">&times;</span>
+            </div>
+            
+            <div style="padding: 25px;">
+                <form method="POST" action="{% url 'resetear_password_admin' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="admin_id" id="resetAdminId">
+                    
+                    <div class="admin-form-group" style="margin-bottom: 20px;">
+                        <label style="margin-bottom: 5px; display: block;">Escribe la nueva contraseña</label>
+                        <input type="password" name="nueva_password" class="admin-form-control" style="width: 100%; box-sizing: border-box;" required>
+                    </div>
+                    
+                    <div class="admin-form-group" style="margin-bottom: 30px;">
+                        <label style="margin-bottom: 5px; display: block;">Confirma la contraseña</label>
+                        <input type="password" name="confirmar_password" class="admin-form-control" style="width: 100%; box-sizing: border-box;" required>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                        <button type="button" class="btn-action btn-reject" onclick="cerrarModalReset()">Cancelar</button>
+                        <button type="submit" class="btn-submit-admin" style="margin-top: 0; padding: 10px 20px;">💾 Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalReset(adminId, adminNombre) {
+            // Pasamos el ID al formulario oculto
+            document.getElementById('resetAdminId').value = adminId;
+            // Cambiamos el texto para saber a quién le estamos cambiando la clave
+            document.getElementById('resetModalTitle').innerText = 'Usuario: ' + adminNombre;
+            // Mostramos la ventana
+            document.getElementById('resetModal').style.display = 'flex';
+        }
+
+        function cerrarModalReset() {
+            document.getElementById('resetModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Estudiante - Escuela Teschi</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo-circle-small">T</div>
+            <div class="user-info">
+                <h2>Portal Estudiante</h2>
+                <p>{{ nombre_estudiante }} - {{ matricula }}</p>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="btn-logout" onclick="window.location.href='{% url 'login' %}'">Cerrar Sesión</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="card progress-card">
+            <h3>Progreso de Créditos</h3>
+            <p>{{ creditos_aprobados }} de 5 créditos aprobados</p>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width: {{ creditos_aprobados|add:creditos_aprobados|add:creditos_aprobados|add:creditos_aprobados|add:creditos_aprobados|add:creditos_aprobados }}0%;"></div>
+            </div>
+            <p class="text-muted">Te faltan {{ creditos_faltantes }} créditos por aprobar</p>
+        </section>
+
+        <section class="credits-grid">
+            <style>
+                .credit-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+                .credit-header h4 { margin: 0; }
+                .badge-revision { background-color: #e0f0ff; color: #0066cc; padding: 3px 10px; border-radius: 12px; font-size: 0.75em; font-weight: bold; border: 1px solid #b3d7ff; }
+                .badge-aprobado { background-color: #d4edda; color: #155724; padding: 3px 10px; border-radius: 12px; font-size: 0.75em; font-weight: bold; border: 1px solid #c3e6cb; }
+                .badge-rechazado { background-color: #f8d7da; color: #721c24; padding: 3px 10px; border-radius: 12px; font-size: 0.75em; font-weight: bold; border: 1px solid #f5c6cb; }
+                .text-sm { font-size: 0.85em; color: #666; margin: 5px 0; }
+                .btn-upload-full { width: 100%; background-color: #00a650; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; font-weight: bold; margin-top: 15px;}
+                .btn-upload-full:hover { background-color: #008f45; }
+            </style>
+
+            {% for credito in lista_creditos %}
+            <div class="card credit-card">
+                
+                {% if credito.subido %}
+                    <div class="credit-header">
+                        <h4>Crédito {{ credito.numero }}</h4>
+                        {% if credito.estado == 'En Revisión' %}
+                            <span class="badge-revision">⏱️ En Revisión</span>
+                        {% elif credito.estado == 'Aprobado' %}
+                            <span class="badge-aprobado">✅ Aprobado</span>
+                        {% elif credito.estado == 'Rechazado' %}
+                            <span class="badge-rechazado">❌ Rechazado</span>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="text-sm">Archivo: {{ credito.archivo_nombre }}</p>
+                    <p class="text-sm">Semestre: {{ credito.semestre }}</p>
+                    <p class="text-sm">Subido: {{ credito.fecha }}</p>
+                    
+                    {% if credito.estado == 'Rechazado' %}
+                        <button class="btn-upload-full" onclick="abrirModal({{ credito.numero }})" style="background-color: #d9534f;">
+                            ↑ Subir Corrección
+                        </button>
+                    {% elif credito.estado == 'En Revisión' %}
+                        <button class="btn-upload-full" onclick="abrirModal({{ credito.numero }})">
+                            ↑ Reemplazar Documento
+                        </button>
+                    {% else %}
+                        <div style="text-align: center; margin-top: 15px; color: #155724; font-weight: bold;">
+                            Documento Aceptado
+                        </div>
+                    {% endif %}
+
+                {% else %}
+                    <div class="credit-header">
+                        <h4>Crédito {{ credito.numero }}</h4>
+                    </div>
+                    <p class="text-sm" style="margin-bottom: 25px;">Sin documento cargado</p>
+                    
+                    <button class="btn-upload-full" onclick="abrirModal({{ credito.numero }})">
+                        ↑ Subir Documento
+                    </button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </section>
+        
+        <section class="card info-card">
+            <h4>Información Importante</h4>
+            <ul>
+                <li>Los documentos deben estar en formato PDF</li>
+                <li>El administrador revisará tu documentación en breve</li>
+            </ul>
+        </section>
+    </main>
+
+    <div id="modalSubir" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModal()">&times;</span>
+            <h3 id="modalTitulo">Subir Documento</h3>
+            
+            <form method="POST" action="{% url 'portal_estudiante' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="numero_credito" id="inputCredito">
+                <div class="input-group">
+                    <label>Archivo PDF</label>
+                    <input type="file" accept="application/pdf" name="documento_pdf" required>
+                </div>
+                <div class="input-group">
+                    <label>Semestre</label>
+                    <select name="semestre" required>
+                        <option value="" disabled selected>Selecciona</option>
+                        {% for n in "123456789" %}
+                        <option value="{{ n }}">Semestre {{ n }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn-submit">Subir Documento</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function abrirModal(numero) {
+            document.getElementById('modalSubir').style.display = 'flex';
+            document.getElementById('modalTitulo').innerText = 'Subir Documento - Crédito ' + numero;
+            document.getElementById('inputCredito').value = numero;
+        }
+        function cerrarModal() { document.getElementById('modalSubir').style.display = 'none'; }
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('modalSubir')) cerrarModal();
+        }
+    </script>
+</body>
+</html>

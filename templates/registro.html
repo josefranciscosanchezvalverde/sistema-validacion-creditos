@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escuela Teschi - Registro</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo-circle">T</div>
+            
+            <h1>Escuela Teschi</h1>
+            <p class="subtitle">Sistema de Gestión de Créditos</p>
+
+            <div class="tab-container">
+                <button class="tab" onclick="window.location.href='{% url 'login' %}'">Iniciar Sesión</button>
+                <button class="tab active">Registrarse</button>
+            </div>
+
+            <form method="POST" id="formRegistro">
+                {% csrf_token %}
+                
+                <div class="input-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" placeholder="Juan Pérez" name="nombre_completo" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Matrícula</label>
+                    <input type="tel" 
+                           placeholder="2022451009" 
+                           name="matricula" 
+                           id="matricula" 
+                           required 
+                           maxlength="10" 
+                           title="La matrícula debe tener exactamente 10 dígitos numéricos">
+                </div>
+
+                <div class="input-group">
+                    <label>Correo Electrónico Institucional</label>
+                    <input type="email" 
+                           placeholder="2022451009@teschi.edu.mx" 
+                           name="correo" 
+                           id="correo"
+                           required 
+                           readonly
+                           title="Se genera automáticamente a partir de tu matrícula">
+                </div>
+
+                <div class="input-group">
+                    <label>Contraseña</label>
+                    <input type="password" placeholder="Mínimo 6 caracteres" name="password" required minlength="6">
+                </div>
+
+                <button type="submit" class="btn-login">Registrarse</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        // 🛠️ AUTOCOMPLETADO Y VALIDACIÓN EN TIEMPO REAL
+        const formRegistro = document.getElementById('formRegistro');
+        const inputMatricula = document.getElementById('matricula');
+        const inputCorreo = document.getElementById('correo');
+
+        // Limpieza de caracteres no numéricos mientras escribe
+        inputMatricula.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+
+            if (this.value.length > 10) {
+                this.value = this.value.slice(0, 10);
+            }
+
+            const valor = inputMatricula.value.trim();
+            if(valor) {
+                inputCorreo.value = valor + '@teschi.edu.mx';
+            } else {
+                inputCorreo.value = '';
+            }
+        });
+
+        // 🔥 DETECTAR EL ENVÍO DEL FORMULARIO PARA AGREGAR LA ALERTA PERSONALIZADA
+        formRegistro.addEventListener('submit', function(event) {
+            const matricula = inputMatricula.value.trim();
+
+            // Si no tiene exactamente 10 dígitos, frena el envío y avisa
+            if (matricula.length !== 10) {
+                event.preventDefault(); // Detiene el envío del formulario a Django
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Matrícula Inválida',
+                    text: 'La matrícula debe tener exactamente 10 dígitos (puro número, sin letras ni símbolos).',
+                    confirmButtonColor: '#00a843',
+                    confirmButtonText: 'Entendido'
+                });
+            }
+        });
+    </script>
+
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                Swal.fire({
+                    icon: '{% if message.tags == "error" %}error{% elif message.tags == "success" %}success{% else %}info{% endif %}',
+                    title: '{% if message.tags == "error" %}¡Aviso!{% elif message.tags == "success" %}¡Registro Exitoso!{% else %}Información{% endif %}',
+                    text: '{{ message }}',
+                    confirmButtonColor: '#0056b3',
+                    confirmButtonText: 'Entendido'
+                });
+            </script>
+        {% endfor %}
+    {% endif %}
+</body>
+</html>

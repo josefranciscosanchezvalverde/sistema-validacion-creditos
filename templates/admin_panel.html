@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo - Escuela Teschi</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+    
+    <nav class="navbar-green">
+        <div class="nav-left" style="display: flex; align-items: center; gap: 15px;">
+            <div class="user-info">
+                <h2>Panel de Administración</h2>
+                <p>Teschi - Gestión de Créditos</p>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="btn-logout-design" onclick="window.location.href='{% url 'salir' %}'">
+                <span>➔</span> Cerrar Sesión
+            </button>
+        </div>
+    </nav>
+
+    <div class="tabs-full-width">
+        <div class="tabs-container">
+            <a href="{% url 'panel_admin' %}" class="tab-item active">
+                📄 Gestión de Créditos
+            </a>
+            <a href="{% url 'gestion_administradores' %}" class="tab-item">
+                🛡️ Gestión de Administradores
+            </a>
+        </div>
+    </div>
+
+    <main class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h4>Total Estudiantes</h4>
+                <div class="number">👥 {{ total_estudiantes }}</div>
+            </div>
+            <div class="stat-card">
+                <h4>Total Documentos</h4>
+                <div class="number">📄 {{ total_documentos }}</div>
+            </div>
+            <div class="stat-card">
+                <h4 style="color: #0066cc;">En Revisión</h4>
+                <div class="number">⏱️ {{ total_en_revision }}</div>
+            </div>
+            <div class="stat-card">
+                <h4>Aprobados</h4>
+                <div class="number">✅ {{ total_aprobados_global }}</div>
+            </div>
+        </div>
+
+        <div class="admin-main-card">
+            <div class="section-title">Estudiantes y Documentos</div>
+            <div class="section-subtitle">Revisa y evalúa los documentos de cada estudiante</div>
+            
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="inputBusqueda" placeholder="Buscar por matrícula, nombre o correo...">
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #eaeaea; margin-bottom: 20px;">
+
+            <div id="listaEstudiantes">
+                {% if datos_estudiantes %}
+                    {% for dato in datos_estudiantes %}
+                    <div class="student-card" 
+                         data-nombre="{{ dato.estudiante.first_name|default:dato.estudiante.username|lower }}" 
+                         data-matricula="{{ dato.estudiante.username|lower }}" 
+                         data-correo="{{ dato.estudiante.email|lower }}">
+                        
+                        <!-- 🔥 HEADER MODIFICADO -->
+                        <div class="student-header" onclick="toggleStudent('student-{{ forloop.counter }}', this)">
+                            
+                            <div class="student-info">
+                                <h3>{{ dato.estudiante.first_name|default:dato.estudiante.username }}</h3>
+                                <p>{{ dato.estudiante.username }} - {{ dato.estudiante.email }}</p>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                
+                                <div class="student-progress">
+                                    {{ dato.total_aprobados }}/5 aprobados
+                                    <span class="icon-arrow">🔽</span>
+                                </div>
+
+                                <!-- 🔴 BOTÓN ELIMINAR -->
+                                <form method="POST" action="{% url 'eliminar_estudiante' dato.estudiante.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                        style="background:#dc3545; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer;"
+                                        onclick="return confirm('¿Eliminar este estudiante?')">
+                                        🗑
+                                    </button>
+                                </form>
+
+                            </div>
+                        </div>
+
+                        <div id="student-{{ forloop.counter }}" class="student-body">
+                            {% if dato.creditos %}
+                                {% for credito in dato.creditos %}
+                                <div class="doc-item">
+                                    <div class="doc-info">
+                                        <h4>
+                                            Crédito {{ credito.numero_credito }}
+                                            {% if credito.estado == 'En Revisión' %}
+                                                <span class="badge-revision">⏱️ En Revisión</span>
+                                            {% elif credito.estado == 'Aprobado' %}
+                                                <span class="badge-aprobado">✅ Aprobado</span>
+                                            {% elif credito.estado == 'Rechazado' %}
+                                                <span class="badge-rechazado">❌ Rechazado</span>
+                                            {% endif %}
+                                        </h4>
+                                        <p>Archivo: {% if credito.archivo %}{{ credito.archivo.name }}{% else %}Sin archivo{% endif %}</p>
+                                        <p>Semestre: {{ credito.semestre }}</p>
+                                    </div>
+                                    
+                                    <div class="actions-group">
+                                        {% if credito.archivo %}
+                                            <button class="btn-action btn-view" onclick="abrirVisor('{{ credito.archivo.url }}', '{{ credito.numero_credito }}', '{{ dato.estudiante.first_name }}')">👁️ Ver PDF</button>
+                                        {% endif %}
+
+                                        {% if credito.estado == 'En Revisión' %}
+                                            <a href="{% url 'aprobar_credito' credito.id %}" class="btn-action btn-approve">Aprobar</a>
+                                            <a href="{% url 'rechazar_credito' credito.id %}" class="btn-action btn-reject">Rechazar</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p style="color: #666; text-align: center; margin: 0;">El estudiante aún no ha subido ningún documento.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="text-align: center; color: #888; padding: 40px 0;">Aún no hay estudiantes registrados.</p>
+                {% endif %}
+            </div>
+
+            <p id="sinResultados" style="display: none; text-align: center; color: #888; padding: 30px 0; font-weight: bold;">
+                ❌ No se encontró ningún estudiante con esos datos.
+            </p>
+        </div>
+    </main>
+
+    <!-- TODO TU JS IGUAL (NO SE MODIFICA) -->
+
+</body>
+</html>

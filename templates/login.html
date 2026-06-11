@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Escuela Teschi - Login</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+
+<body>
+
+    <div class="login-container">
+        <div class="login-card">
+
+            <!-- Logo -->
+            <div class="logo-circle">T</div>
+
+            <h1>Escuela Teschi</h1>
+            <p class="subtitle">Sistema de Gestión de Créditos</p>
+
+            <!-- Tabs -->
+            <div class="tab-container">
+                <button class="tab active">Iniciar Sesión</button>
+
+                <button class="tab"
+                    onclick="window.location.href='{% url 'registro' %}'">
+                    Registrarse
+                </button>
+            </div>
+
+            <!-- Formulario -->
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="input-group">
+                    <label>Matrícula</label>
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Ingresa tu matrícula"
+                        required
+                    >
+                </div>
+
+                <div class="input-group">
+                    <label>Contraseña</label>
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Ingresa tu contraseña"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="btn-login">
+                    Iniciar Sesión
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                Swal.fire({
+                    icon: '{% if message.tags == "error" %}error{% elif message.tags == "success" %}success{% else %}info{% endif %}',
+                    title: '{% if message.tags == "error" %}¡Aviso!{% elif message.tags == "success" %}¡Registro Exitoso!{% else %}Información{% endif %}',
+                    text: '{{ message }}',
+                    confirmButtonColor: '#0056b3',
+                    confirmButtonText: 'Entendido'
+                });
+            </script>
+        {% endfor %}
+    {% endif %}
+
+</body>
+</html>
