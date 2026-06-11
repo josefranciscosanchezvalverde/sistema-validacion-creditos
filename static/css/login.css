@@ -1,0 +1,156 @@
+/* ==========================================================================
+   ESTILOS BASE (Para computadoras y pantallas normales)
+   ========================================================================== */
+body {
+    background-color: #e2f9e9; /* Verde muy claro de fondo */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.login-card {
+    background: white;
+    padding: 2.5rem 2rem; /* Más espacio arriba y abajo para desamontonar */
+    border-radius: 16px; /* Bordes un poco más modernos y suaves */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05); /* Sombra más sutil y estética */
+    width: 380px;
+    max-width: 90%; 
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.logo-circle {
+    background-color: #00a843; /* Verde principal */
+    color: white;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0 auto 1.2rem;
+}
+
+h1 { 
+    color: #004d26; 
+    margin-top: 0;
+    margin-bottom: 8px; 
+    font-size: 1.8rem;
+}
+
+.subtitle { 
+    color: #00a843; 
+    font-size: 0.95rem; 
+    margin-bottom: 2rem; /* Separamos el subtítulo del contenedor de pestañas */
+}
+
+.tab-container {
+    display: flex;
+    background: #e9f5ed;
+    border-radius: 25px;
+    margin-bottom: 2rem; /* Más espacio antes de los inputs */
+    padding: 5px;
+}
+
+.tab {
+    flex: 1;
+    border: none;
+    padding: 12px;
+    border-radius: 20px;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+    color: #555;
+    transition: all 0.3s ease;
+}
+
+.tab.active {
+    background: #00a843;
+    color: white;
+}
+
+.input-group {
+    text-align: left;
+    margin-bottom: 1.5rem; /* ⚡ Espacio ideal entre cada bloque de texto */
+}
+
+.input-group label {
+    display: block;
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+input {
+    width: 100%;
+    padding: 12px; /* Caja un poco más alta y cómoda para dar clic */
+    border: 1px solid #dcdcdc;
+    border-radius: 10px; /* Bordes ligeramente más curvos */
+    background-color: #f8f9fa;
+    box-sizing: border-box;
+    font-size: 15px;
+    transition: border 0.2s;
+}
+
+input:focus {
+    border-color: #00a843;
+    outline: none;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 14px;
+    background-color: #00a843;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 0.5rem;
+    transition: background 0.3s ease;
+}
+
+.btn-login:hover {
+    background-color: #008f37;
+}
+
+/* ==========================================================================
+   MÓVIL RESPONSIVE (Ajustes automáticos para pantallas de celulares)
+   ========================================================================== */
+@media (max-width: 480px) {
+    body {
+        padding: 20px 15px; /* ⚡ Genera un margen exterior obligatorio en el teléfono */
+        box-sizing: border-box;
+        align-items: center; /* Asegura el centrado vertical perfecto */
+    }
+
+    .login-card {
+        width: 100%; 
+        max-width: 100%;
+        padding: 2rem 1.5rem; /* Reducimos padding interno para ganar espacio de lectura */
+        border-radius: 16px !important; /* ⚡ Forzamos a que mantenga sus esquinas circulares en celular */
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    input {
+        padding: 14px 12px; /* Inputs ligeramente más grandes para interacción touch */
+        font-size: 16px; /* Mantiene el anti-zoom automático en móviles */
+    }
+
+    .btn-login {
+        padding: 14px;
+        font-size: 16px;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+    }
+}
